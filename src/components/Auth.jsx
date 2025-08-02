@@ -36,15 +36,9 @@ export default function Auth() {
         if (error) throw error
         
         if (user) {
-          // Create profile record
-          await db.upsertProfile({
-            id: user.id,
-            email: user.email,
-            full_name: fullName.trim(),
-            business_name: businessName.trim(),
-            business_type: businessType,
-            plan: 'free'
-          })
+          // Profile will be automatically created by the database trigger
+          // The trigger uses metadata from the auth user
+          console.log('User created successfully:', user.email)
         }
         
         setMessage('Check your email for the confirmation link!')
@@ -53,18 +47,8 @@ export default function Auth() {
         if (error) throw error
         
         if (user && session) {
-          // Ensure profile exists
-          const { profile } = await db.getProfile(user.id)
-          if (!profile) {
-            await db.upsertProfile({
-              id: user.id,
-              email: user.email,
-              full_name: user.user_metadata?.full_name || '',
-              business_name: user.user_metadata?.business_name || '',
-              business_type: user.user_metadata?.business_type || '',
-              plan: 'free'
-            })
-          }
+          // Profile should already exist from registration trigger
+          console.log('User signed in successfully:', user.email)
         }
       }
     } catch (error) {

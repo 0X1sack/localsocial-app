@@ -3,6 +3,7 @@ import LandingPage from './components/LandingPage'
 import OperationsDashboard from './components/OperationsDashboard'
 import Auth from './components/Auth'
 import Dashboard from './components/Dashboard'
+import { auth } from './lib/supabase'
 import './App.css'
 
 function App() {
