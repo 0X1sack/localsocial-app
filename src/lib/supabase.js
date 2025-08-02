@@ -4,14 +4,14 @@ import { createClient } from '@supabase/supabase-js'
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY
 
-if (!supabaseUrl || !supabaseAnonKey) {
-  throw new Error(
-    'Missing Supabase environment variables. Please check your .env file and ensure VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY are set.'
-  )
-}
+// Use actual values directly for production
+const actualUrl = 'https://ssnuecmlhreonttbvcry.supabase.co'
+const actualKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNzbnVlY21saHJlb250dGJ2Y3J5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQxMTQ3NDEsImV4cCI6MjA2OTY5MDc0MX0.opoe4qcZGzlxtTN-D9NUMRtW6mNO0e4wc75x-ZCX6G8'
 
 // Create Supabase client
-export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+export const supabase = createClient(
+  supabaseUrl || actualUrl, 
+  supabaseAnonKey || actualKey, {
   auth: {
     autoRefreshToken: true,
     persistSession: true,

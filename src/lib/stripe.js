@@ -1,8 +1,9 @@
 // Stripe Payment Processing for LocalSocial
 import { loadStripe } from '@stripe/stripe-js';
 
-// Initialize Stripe
-const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY);
+// Initialize Stripe with fallback
+const stripeKey = import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || 'pk_test_placeholder'
+const stripePromise = loadStripe(stripeKey);
 
 // Pricing plans
 export const PRICING_PLANS = {
