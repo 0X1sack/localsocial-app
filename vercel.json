@@ -11,11 +11,5 @@
       "src": "/(.*)",
       "dest": "/index.html"
     }
-  ],
-  "env": {
-    "VITE_SUPABASE_URL": "@supabase_url",
-    "VITE_SUPABASE_ANON_KEY": "@supabase_anon_key",
-    "VITE_FACEBOOK_APP_ID": "@facebook_app_id",
-    "VITE_STRIPE_PUBLISHABLE_KEY": "@stripe_publishable_key"
-  }
+  ]
 }
