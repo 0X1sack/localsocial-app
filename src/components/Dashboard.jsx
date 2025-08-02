@@ -1,13 +1,14 @@
 import { useState, useEffect } from 'react'
-import { db } from '../lib/supabase'
+import { db, auth } from '../lib/supabase'
 import { postQueue } from '../lib/postQueue'
 import SocialConnect from './SocialConnect'
 import { CalendarIcon, PlusIcon, Cog6ToothIcon, UserCircleIcon } from '@heroicons/react/24/outline'
 
-export default function Dashboard({ user, profile, onSignOut, onProfileUpdate }) {
+export default function Dashboard({ user, onViewChange }) {
   const [posts, setPosts] = useState([])
   const [connectedAccounts, setConnectedAccounts] = useState([])
   const [queueStatus, setQueueStatus] = useState(null)
+  const [profile, setProfile] = useState(null)
   const [loading, setLoading] = useState(true)
   const [currentView, setCurrentView] = useState('dashboard') // 'dashboard', 'connect', 'create'
 
@@ -21,6 +22,7 @@ export default function Dashboard({ user, profile, onSignOut, onProfileUpdate })
     setLoading(true)
     try {
       await Promise.all([
+        loadProfile(),
         loadPosts(),
         loadConnectedAccounts(),
         loadQueueStatus()
@@ -29,6 +31,28 @@ export default function Dashboard({ user, profile, onSignOut, onProfileUpdate })
       console.error('Error loading dashboard data:', error)
     } finally {
       setLoading(false)
+    }
+  }
+
+  const loadProfile = async () => {
+    try {
+      const { profile, error } = await db.getProfile(user.id)
+      if (error) {
+        console.error('Profile error:', error)
+        // If profile doesn't exist, create one
+        await db.upsertProfile({
+          id: user.id,
+          email: user.email,
+          full_name: user.user_metadata?.full_name || '',
+          business_name: user.user_metadata?.business_name || '',
+          business_type: user.user_metadata?.business_type || '',
+          plan: 'free'
+        })
+      } else {
+        setProfile(profile)
+      }
+    } catch (error) {
+      console.error('Error loading profile:', error)
     }
   }
 
@@ -65,6 +89,15 @@ export default function Dashboard({ user, profile, onSignOut, onProfileUpdate })
     setConnectedAccounts(accounts)
     // Refresh dashboard data when accounts are updated
     loadDashboardData()
+  }
+
+  const handleSignOut = async () => {
+    try {
+      await auth.signOut()
+      onViewChange('landing')
+    } catch (error) {
+      console.error('Error signing out:', error)
+    }
   }
 
   const getPostStatusColor = (status) => {
@@ -108,7 +141,7 @@ export default function Dashboard({ user, profile, onSignOut, onProfileUpdate })
                   {profile?.business_name || user.email}
                 </span>
                 <button
-                  onClick={onSignOut}
+                  onClick={handleSignOut}
                   className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md text-sm font-medium"
                 >
                   Sign Out

@@ -1,8 +1,35 @@
 import { useState } from 'react'
 import { CalendarIcon, ChatBubbleLeftRightIcon, ChartBarIcon, GlobeAltIcon } from '@heroicons/react/24/outline'
+import { createCheckoutSession, PRICING_PLANS } from '../lib/stripe'
 
-export default function LandingPage({ onShowAuth }) {
-  const [showAuth, setShowAuth] = useState(false)
+export default function LandingPage({ onViewChange, user }) {
+  const [isLoading, setIsLoading] = useState(false)
+
+  const handleGetStarted = () => {
+    if (user) {
+      onViewChange('dashboard')
+    } else {
+      onViewChange('auth')
+    }
+  }
+
+  const handlePurchase = async (planKey) => {
+    if (!user) {
+      onViewChange('auth')
+      return
+    }
+
+    setIsLoading(true)
+    try {
+      const plan = PRICING_PLANS[planKey]
+      await createCheckoutSession(plan.priceId)
+    } catch (error) {
+      console.error('Error starting checkout:', error)
+      alert('Something went wrong. Please try again.')
+    } finally {
+      setIsLoading(false)
+    }
+  }
   return (
     <div className="bg-white">
       {/* Header */}
@@ -14,10 +41,10 @@ export default function LandingPage({ onShowAuth }) {
             </div>
             <div className="flex items-center space-x-4">
               <button
-                onClick={() => setShowAuth(true)}
+                onClick={handleGetStarted}
                 className="bg-white text-blue-600 px-4 py-2 rounded-md text-sm font-medium hover:bg-gray-50"
               >
-                Get Started
+                {user ? 'Go to Dashboard' : 'Get Started'}
               </button>
             </div>
           </div>
@@ -37,7 +64,7 @@ export default function LandingPage({ onShowAuth }) {
               </p>
               <div className="mt-10 flex items-center justify-center gap-x-6">
                 <button
-                  onClick={() => setShowAuth(true)}
+                  onClick={handleGetStarted}
                   className="rounded-md bg-blue-600 px-6 py-3 text-lg font-semibold text-white shadow-sm hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
                 >
                   Start Free Trial
@@ -135,8 +162,12 @@ export default function LandingPage({ onShowAuth }) {
                     <li>✓ Google Business Profile</li>
                     <li>✓ Email support</li>
                   </ul>
-                  <button className="mt-8 w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700">
-                    Start Free Trial
+                  <button 
+                    onClick={() => handlePurchase('starter')}
+                    disabled={isLoading}
+                    className="mt-8 w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 disabled:opacity-50"
+                  >
+                    {isLoading ? 'Loading...' : 'Start Free Trial'}
                   </button>
                 </div>
               </div>
@@ -163,8 +194,12 @@ export default function LandingPage({ onShowAuth }) {
                     <li>✓ Review monitoring</li>
                     <li>✓ Priority support</li>
                   </ul>
-                  <button className="mt-8 w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700">
-                    Start Free Trial
+                  <button 
+                    onClick={() => handlePurchase('professional')}
+                    disabled={isLoading}
+                    className="mt-8 w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 disabled:opacity-50"
+                  >
+                    {isLoading ? 'Loading...' : 'Start Free Trial'}
                   </button>
                 </div>
               </div>
@@ -186,8 +221,12 @@ export default function LandingPage({ onShowAuth }) {
                     <li>✓ API access</li>
                     <li>✓ Dedicated account manager</li>
                   </ul>
-                  <button className="mt-8 w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700">
-                    Contact Sales
+                  <button 
+                    onClick={() => handlePurchase('agency')}
+                    disabled={isLoading}
+                    className="mt-8 w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 disabled:opacity-50"
+                  >
+                    {isLoading ? 'Loading...' : 'Start Free Trial'}
                   </button>
                 </div>
               </div>
@@ -205,7 +244,7 @@ export default function LandingPage({ onShowAuth }) {
             <div className="mt-8 flex lg:mt-0 lg:flex-shrink-0">
               <div className="inline-flex rounded-md shadow">
                 <button
-                  onClick={() => setShowAuth(true)}
+                  onClick={handleGetStarted}
                   className="inline-flex items-center justify-center px-5 py-3 border border-transparent text-base font-medium rounded-md text-blue-600 bg-white hover:bg-gray-50"
                 >
                   Get started
@@ -217,42 +256,6 @@ export default function LandingPage({ onShowAuth }) {
       </main>
 
       {/* Simple Auth Modal */}
-      {showAuth && (
-        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white p-8 rounded-lg max-w-md w-full mx-4">
-            <div className="text-center">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">
-                Coming Soon!
-              </h3>
-              <p className="text-gray-600 mb-6">
-                LocalSocial is in development. Set up your Supabase account and API credentials to start using the full application.
-              </p>
-              <div className="space-y-3">
-                <a
-                  href="https://supabase.com"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="block w-full bg-green-600 text-white py-2 px-4 rounded-md hover:bg-green-700"
-                >
-                  1. Create Supabase Account
-                </a>
-                <a
-                  href="./API-SETUP.md"
-                  className="block w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700"
-                >
-                  2. Setup API Access
-                </a>
-                <button
-                  onClick={() => setShowAuth(false)}
-                  className="block w-full bg-gray-300 text-gray-700 py-2 px-4 rounded-md hover:bg-gray-400"
-                >
-                  Close
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   )
 }
